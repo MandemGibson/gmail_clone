@@ -5,17 +5,30 @@ import { Button } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { closeSendMessage } from "./features/mailSlice";
+import { db } from "./firebase";
+import { serverTimestamp } from "firebase/firestore/lite";
 
 function SendMail() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (formData) => {
-    console.log(formData);
+  const onSubmit = async (formData) => {
+    try {
+      console.log(formData);
+      await db.collection("emails").add({
+        to: formData.to,
+        subject: formData.subject,
+        message: formData.message,
+        timestamp: serverTimestamp(),
+      });
+
+      dispatch(closeSendMessage());
+    } catch (error) {
+      console.error("Firestore update error:", error);
+    }
   };
 
   const dispatch = useDispatch();
@@ -32,26 +45,29 @@ function SendMail() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <input
+          name="to"
           placeholder="To:"
           type="email"
-          ref={register("to", { required: true })}
+          {...register("to", { required: true })}
         />
         {errors.to && <p className="sendMail__error">To is required!</p>}
 
         <input
+          name="subject"
           placeholder="Subject"
           type="text"
-          ref={register("subject", { required: true })}
+          {...register("subject", { required: true })}
         />
         {errors.subject && (
           <p className="sendMail__error">Subject is required!</p>
         )}
 
         <input
+          name="message"
           placeholder="Message..."
           type="text"
           className="sendMail__message"
-          ref={register("message", { required: true })}
+          {...register("message", { required: true })}
         />
         {errors.message && (
           <p className="sendMail__error">Message is required!</p>

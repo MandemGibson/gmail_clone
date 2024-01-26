@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./EmailList.css";
 import { Checkbox, IconButton } from "@mui/material";
 import {
@@ -15,8 +15,19 @@ import {
 } from "@mui/icons-material";
 import Section from "./Section";
 import EmailRow from "./EmailRow";
+import { setDoc, doc } from "firebase/firestore/lite";
+import { db } from "./firebase";
 
 function EmailList() {
+  const [emails, setEmails] = useState("");
+
+  useEffect(() => {
+    setDoc(doc(db, "emails"), {
+      id: doc.id,
+      data: doc.data,
+    });
+  }, []);
+
   return (
     <div className="emailList">
       <div className="emailList__settings">
